@@ -1,5 +1,5 @@
 {
-  "name": "pf-node-ts-template",
+  "name": "data_recorder",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -33,5 +33,8 @@
     "*.{ts,tsx}": ["eslint --fix", "prettier --write"],
     "*.{js,jsx}": ["prettier --write"],
     "*.{md,json}": ["prettier --write"]
+  },
+  "dependencies": {
+    "mqtt": "^5.14.1"
   }
 }
