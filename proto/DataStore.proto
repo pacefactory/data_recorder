@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+message FrameTime {
+    int64 frame_index = 1;
+    int64 epoch_ms = 2;
+}
+
+message StoredMqttMessage {
+    FrameTime frame_time = 1;
+    bytes message_buffer = 2;
+}
+
+message DataStore {
+    message MqttMessageList {
+        repeated StoredMqttMessage mqttMessages = 2;
+    }
+
+    map<string, MqttMessageList> messages_by_topic = 1;
+}

@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "tsc",
+    "pbuf-build": "pbjs -t static-module -w commonjs -o proto/DataStore.js proto/DataStore.proto && pbts -o proto/DataStore.d.ts proto/DataStore.js && mkdir -p dist/proto && cp proto/*.js dist/proto/",
+    "build": "npm run pbuf-build && tsc",
     "start": "node dist/src/index.js",
     "test": "jest",
     "lint": "eslint .",
@@ -25,6 +26,7 @@
     "jest": "^30.0.4",
     "lint-staged": "^16.1.2",
     "prettier": "^3.6.2",
+    "protobufjs-cli": "^1.1.3",
     "ts-jest": "^29.4.0",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.36.0"
@@ -35,6 +37,7 @@
     "*.{md,json}": ["prettier --write"]
   },
   "dependencies": {
-    "mqtt": "^5.14.1"
+    "mqtt": "^5.14.1",
+    "protobufjs": "^7.5.4"
   }
 }
