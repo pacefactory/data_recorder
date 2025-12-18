@@ -7,3 +7,8 @@ export interface StoredMessage {
     frameTime: FrameTime;
     messageBuffer: Buffer;
 }
+
+export interface StoredMessageOnTopic {
+    topic: string;
+    storedMessage: StoredMessage;
+}

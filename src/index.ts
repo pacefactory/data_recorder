@@ -3,6 +3,7 @@ import {parseArgs} from "util";
 import {recordData} from "./recording";
 import {MessageStore} from "./storage";
 import {open} from "fs/promises";
+import {MessageSequence} from "./playback";
 
 async function runCLIRecord(args: string[]) {
     const parsedArgs = parseArgs({
@@ -60,11 +61,15 @@ async function runCLIPlayback(args: string[]) {
                 type: "string",
                 short: "i",
             },
+            mqtt_url: {
+                type: "string",
+                short: "u",
+            },
         },
     });
 
-    if (parsedArgs.values.in === undefined) {
-        console.error("Required options: in");
+    if (parsedArgs.values.in === undefined || parsedArgs.values.mqtt_url === undefined) {
+        console.error("Required options: in, mqtt_url");
         process.exit(1);
     }
 
@@ -73,7 +78,13 @@ async function runCLIPlayback(args: string[]) {
     await file.close();
 
     const messageStore = MessageStore.fromProtobufEncoded(Buffer.from(buffer));
-    console.log(messageStore.dataStore);
+    const messageSequence = MessageSequence.fromMessageStore(messageStore);
+
+    const mqttClient = await mqtt.connectAsync(parsedArgs.values.mqtt_url);
+
+    await messageSequence.mqttPlayback(mqttClient);
+
+    mqttClient.endAsync();
 }
 
 async function runCLI() {
