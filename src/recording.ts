@@ -4,9 +4,11 @@ import {FrameTime, StoredMessage} from "./types";
 
 export class MessageRecorder {
     messagesByTopic: {[topic: string]: StoredMessage[]};
+    cameraNameByTopic: {[topic: string]: string};
 
-    constructor() {
+    constructor(cameraNameByTopic: {[topic: string]: string}) {
         this.messagesByTopic = {};
+        this.cameraNameByTopic = cameraNameByTopic;
     }
 
     /**
@@ -41,6 +43,12 @@ export class MessageRecorder {
         }
         messageArray.push(storedMessage);
     }
+
+    sortMessages() {
+        for (const msgArray of Object.values(this.messagesByTopic)) {
+            msgArray.sort(({frameTime: {epochMs: ems1}}, {frameTime: {epochMs: ems2}}) => ems1 - ems2);
+        }
+    }
 }
 
 function getCameraFrameTopic(cameraName: string): string {
@@ -52,8 +60,9 @@ export async function recordData(
     cameraNames: string[],
     durationMs: number,
 ): Promise<MessageRecorder> {
-    const messageRecorder = new MessageRecorder();
-    const topics = cameraNames.map(getCameraFrameTopic);
+    const cameraNameByTopic = Object.fromEntries(cameraNames.map((c) => [getCameraFrameTopic(c), c]));
+    const messageRecorder = new MessageRecorder(cameraNameByTopic);
+    const topics = Object.keys(cameraNameByTopic);
     await mqttClient.subscribeAsync(topics);
     mqttClient.on("message", (topic, message) => messageRecorder.recordMessage(topic, message));
 
@@ -62,5 +71,8 @@ export async function recordData(
 
     mqttClient.removeAllListeners();
     await mqttClient.unsubscribeAsync(topics);
+
+    // Ensure messages are sorted by timestamp
+    messageRecorder.sortMessages();
     return messageRecorder;
 }

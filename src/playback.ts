@@ -11,8 +11,8 @@ export class MessageSequence {
 
     static fromMessageStore(messageStore: MessageStore): MessageSequence {
         const messages = [];
-        for (const [topic, {mqttMessages}] of Object.entries(messageStore.dataStore.messagesByTopic)) {
-            for (const msg of mqttMessages!) {
+        for (const [topic, {frameData}] of Object.entries(messageStore.dataStore.messagesByTopic)) {
+            for (const msg of frameData!) {
                 messages.push({topic, storedMessage: msg as StoredMessage});
             }
         }

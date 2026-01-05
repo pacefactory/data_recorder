@@ -1,5 +1,6 @@
 import {MessageRecorder} from "./recording";
 import {DataStore, IDataStore} from "../proto/DataStore";
+import {downloadSnapshots} from "./snapshots";
 
 export class MessageStore {
     dataStore: DataStore;
@@ -8,16 +9,26 @@ export class MessageStore {
         this.dataStore = dataStore;
     }
 
-    static fromRecorder(recorder: MessageRecorder): MessageStore {
-        const messagesByTopic: {[topic: string]: DataStore.IMqttMessageList} = {};
-
-        // Ensure messages are sorted by timestamp
+    static async fromRecorder(recorder: MessageRecorder, dbserver_base?: string): Promise<MessageStore> {
+        const messagesByTopic: {[topic: string]: DataStore.IFrameDataList} = {};
         for (const [topic, msgArray] of Object.entries(recorder.messagesByTopic)) {
-            msgArray.sort(({frameTime: {epochMs: ems1}}, {frameTime: {epochMs: ems2}}) => ems1 - ems2);
-            messagesByTopic[topic] = {mqttMessages: msgArray};
+            messagesByTopic[topic] = {frameData: msgArray};
         }
 
-        const dataStore: IDataStore = {messagesByTopic};
+        const snapshotsByCamera: {[cameraName: string]: DataStore.ISnapshotList} = {};
+        if (dbserver_base !== undefined) {
+            for await (const {timestamp, topic, imageData} of downloadSnapshots(dbserver_base, recorder)) {
+                const cameraName = recorder.cameraNameByTopic[topic];
+                const snapshotData = {epochMs: timestamp, image: imageData.read()};
+                if (cameraName in snapshotsByCamera) {
+                    snapshotsByCamera[cameraName].snapshot!.push(snapshotData);
+                } else {
+                    snapshotsByCamera[cameraName] = {snapshot: [snapshotData]};
+                }
+            }
+        }
+
+        const dataStore: IDataStore = {messagesByTopic, snapshotsByCamera};
 
         const verifyResult = DataStore.verify(dataStore);
         if (verifyResult !== null) {

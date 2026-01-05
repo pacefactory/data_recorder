@@ -5,15 +5,26 @@ message FrameTime {
     int64 epoch_ms = 2;
 }
 
-message StoredMqttMessage {
+message FrameData {
     FrameTime frame_time = 1;
     bytes message_buffer = 2;
 }
 
+message Snapshot {
+    int64 epoch_ms = 1;
+    bytes image = 2;
+}
+
 message DataStore {
-    message MqttMessageList {
-        repeated StoredMqttMessage mqttMessages = 2;
+    message FrameDataList {
+        repeated FrameData frameData = 2;
     }
 
-    map<string, MqttMessageList> messages_by_topic = 1;
+    map<string, FrameDataList> messages_by_topic = 1;
+
+    message SnapshotList {
+        repeated Snapshot snapshot = 4;
+    }
+
+    map<string, SnapshotList> snapshots_by_camera = 3;
 }

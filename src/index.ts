@@ -22,6 +22,10 @@ async function runCLIRecord(args: string[]) {
                 type: "string",
                 short: "u",
             },
+            dbserver_url: {
+                type: "string",
+                short: "s",
+            },
             out: {
                 type: "string",
                 short: "o",
@@ -38,12 +42,15 @@ async function runCLIRecord(args: string[]) {
         console.error("Required options: duration, camera, mqtt_url, out");
         process.exit(1);
     }
+    if (parsedArgs.values.dbserver_url === undefined) {
+        console.log("Warning: dbserver_url not specified; will not save snapshots");
+    }
     const duration = parseInt(parsedArgs.values.duration);
     const cameras = parsedArgs.values.camera;
 
     const mqttClient = await mqtt.connectAsync(parsedArgs.values.mqtt_url);
     const messageRecorder = await recordData(mqttClient, cameras, duration);
-    const messageStore = MessageStore.fromRecorder(messageRecorder);
+    const messageStore = await MessageStore.fromRecorder(messageRecorder, parsedArgs.values.dbserver_url);
     const buffer = messageStore.toProtobufEncoded();
 
     mqttClient.endAsync();
