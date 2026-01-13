@@ -1,6 +1,7 @@
 import mqtt from "mqtt";
 import {MessageStore} from "./storage";
 import {StoredMessage, StoredMessageOnTopic} from "./types";
+import {setTimeout} from "node:timers/promises";
 
 export class MessageSequence {
     messages: StoredMessageOnTopic[];
@@ -37,7 +38,8 @@ export class MessageSequence {
 
     async mqttPlayback(mqttClient: mqtt.MqttClient) {
         for (const {topic, storedMessage} of this.messages) {
-            await mqttClient.publishAsync(topic, storedMessage.messageBuffer);
+            await mqttClient.publishAsync(topic, storedMessage.messageBuffer, {qos: 2});
+            await setTimeout(20);
         }
     }
 }
