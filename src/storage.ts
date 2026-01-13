@@ -1,6 +1,7 @@
 import {MessageRecorder} from "./recording";
 import {DataStore, IDataStore} from "../proto/DataStore";
 import {downloadSnapshots} from "./snapshots";
+import {toNumber} from "./utils";
 
 export class MessageStore {
     dataStore: DataStore;
@@ -46,5 +47,25 @@ export class MessageStore {
     static fromProtobufEncoded(encoded: Uint8Array): MessageStore {
         const dataStore = DataStore.decode(encoded);
         return new MessageStore(dataStore);
+    }
+
+    trim(startTimestampMs: number, endTimestampMs: number) {
+        // Trim frame messages
+        for (const [topic, message] of Object.entries(this.dataStore.messagesByTopic)) {
+            const filteredMessage = message.frameData!.filter((fd) => {
+                const epochMs = toNumber(fd.frameTime!.epochMs!);
+                return epochMs >= startTimestampMs && epochMs <= endTimestampMs;
+            });
+            this.dataStore.messagesByTopic[topic].frameData = filteredMessage;
+        }
+
+        // Trim snapshots, if necessary
+        for (const [camera, snapshots] of Object.entries(this.dataStore.snapshotsByCamera)) {
+            const filteredSnapshots = snapshots.snapshot!.filter((sn) => {
+                const epochMs = toNumber(sn.epochMs!);
+                return epochMs >= startTimestampMs && epochMs <= endTimestampMs;
+            });
+            this.dataStore.snapshotsByCamera[camera].snapshot = filteredSnapshots;
+        }
     }
 }

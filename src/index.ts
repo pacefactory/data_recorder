@@ -94,14 +94,73 @@ async function runCLIPlayback(args: string[]) {
     mqttClient.endAsync();
 }
 
+async function runCLITrim(args: string[]) {
+    const parsedArgs = parseArgs({
+        args,
+        options: {
+            in: {
+                type: "string",
+                short: "i",
+            },
+            out: {
+                type: "string",
+                short: "o",
+            },
+            start: {
+                type: "string",
+                short: "s",
+            },
+            end: {
+                type: "string",
+                short: "e",
+            },
+        },
+    });
+
+    if (
+        parsedArgs.values.in === undefined ||
+        parsedArgs.values.out === undefined ||
+        parsedArgs.values.start === undefined ||
+        parsedArgs.values.end === undefined
+    ) {
+        console.error("Required options: in, out, start, end");
+        process.exit(1);
+    }
+
+    const start = parseInt(parsedArgs.values.start);
+    if (Number.isNaN(start)) {
+        console.error("Invalid value for `start` - must be number");
+        process.exit(1);
+    }
+    const end = parseInt(parsedArgs.values.end);
+    if (Number.isNaN(end)) {
+        console.error("Invalid value for `end` - must be number");
+        process.exit(1);
+    }
+
+    const file = await open(parsedArgs.values.in, "r");
+    const {buffer} = await file.readFile();
+    await file.close();
+
+    const messageStore = MessageStore.fromProtobufEncoded(Buffer.from(buffer));
+    messageStore.trim(start, end);
+    const outBuffer = messageStore.toProtobufEncoded();
+
+    const outFile = await open(parsedArgs.values.out, "w");
+    await outFile.write(outBuffer);
+    await outFile.close();
+}
+
 async function runCLI() {
     const [, , mode, ...args] = process.argv;
     if (mode === "record") {
         await runCLIRecord(args);
     } else if (mode === "playback") {
         await runCLIPlayback(args);
+    } else if (mode === "trim") {
+        await runCLITrim(args);
     } else {
-        console.error("Must be run with mode `record` or `playback`.");
+        console.error("Invalid mode specified. Valid modes: record, playback, trim");
     }
 }
 
