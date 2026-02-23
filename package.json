@@ -1,8 +1,15 @@
 {
-  "name": "data_recorder",
+  "name": "@pacefactory/data_recorder",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pacefactory/data_recorder.git"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/"
+  },
   "scripts": {
     "pbuf-build": "pbjs -t static-module -w commonjs -o proto/DataStore.js proto/DataStore.proto && pbts -o proto/DataStore.d.ts proto/DataStore.js && mkdir -p dist/proto && cp proto/*.js dist/proto/",
     "build": "npm run pbuf-build && tsc",
