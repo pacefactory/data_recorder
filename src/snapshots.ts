@@ -4,7 +4,7 @@ import {stream} from "undici";
 import {MessageRecorder} from "./recording";
 
 function getDbserverSnapshotsUrl(dbserverBase: string, cameraId: string, startTime: number, endTime: number) {
-    return `${dbserverBase}/${cameraId}/snapshots/get-many-images-tar/by-time-range/${startTime}/${endTime}`;
+    return new URL(`${cameraId}/snapshots/get-many-images-tar/by-time-range/${startTime}/${endTime}`, dbserverBase);
 }
 
 /**
@@ -31,7 +31,6 @@ export async function* downloadSnapshots(
         const startTimeMs = messages[0].frameTime.epochMs;
         const endTimeMs = messages[messages.length - 1].frameTime.epochMs;
         const url = getDbserverSnapshotsUrl(dbserverBase, cameraName, startTimeMs, endTimeMs);
-        console.log(url);
 
         const extract = tar.extract();
         const fut = stream(
