@@ -9,9 +9,13 @@
       "types": "./dist/src/index.d.ts",
       "default": "./dist/src/index.js"
     },
-    "./*": {
+    "./lib/*": {
       "types": "./dist/src/*.d.ts",
       "default": "./dist/src/*.js"
+    },
+    "./proto/*": {
+      "types": "./dist/proto/*.d.ts",
+      "default": "./dist/proto/*.js"
     }
   },
   "repository": {
