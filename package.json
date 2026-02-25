@@ -2,7 +2,18 @@
   "name": "@pacefactory/data_recorder",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "default": "./dist/src/index.js"
+    },
+    "./*": {
+      "types": "./dist/src/*.d.ts",
+      "default": "./dist/src/*.js"
+    }
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/pacefactory/data_recorder.git"
