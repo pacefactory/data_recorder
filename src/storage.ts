@@ -42,7 +42,7 @@ export class MessageStore {
             }
         }
 
-        const dataStore: IDataStore = {messagesByTopic, snapshotsByCamera, name, description};
+        const dataStore: IDataStore = {messagesByTopic, snapshotsByCamera, name, description, cameraMetadata};
 
         const verifyResult = DataStore.verify(dataStore);
         if (verifyResult !== null) {
