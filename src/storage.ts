@@ -1,6 +1,6 @@
 import {MessageRecorder} from "./recording";
-import {DataStore, IDataStore} from "../proto/DataStore";
-import {downloadSnapshots} from "./snapshots";
+import {DataStore, ICameraMetadata, IDataStore} from "../proto/DataStore";
+import {downloadSnapshots, getCameraInfoAndConfigInfo} from "./snapshots";
 import {toNumber} from "./utils";
 
 export class MessageStore {
@@ -22,6 +22,7 @@ export class MessageStore {
         }
 
         const snapshotsByCamera: {[cameraName: string]: DataStore.ISnapshotList} = {};
+        const cameraMetadata: {[cameraName: string]: ICameraMetadata} = {};
         if (dbserver_base !== undefined) {
             for await (const {timestamp, topic, imageData} of downloadSnapshots(dbserver_base, recorder)) {
                 const cameraName = recorder.cameraNameByTopic[topic];
@@ -31,6 +32,13 @@ export class MessageStore {
                 } else {
                     snapshotsByCamera[cameraName] = {snapshot: [snapshotData]};
                 }
+            }
+
+            for (const [cameraName, {cameraInfo, configInfo}] of await getCameraInfoAndConfigInfo(
+                dbserver_base,
+                recorder,
+            )) {
+                cameraMetadata[cameraName] = {cameraInfo, configInfo};
             }
         }
 

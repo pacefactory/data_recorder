@@ -7,6 +7,14 @@ function getDbserverSnapshotsUrl(dbserverBase: string, cameraId: string, startTi
     return new URL(`${cameraId}/snapshots/get-many-images-tar/by-time-range/${startTime}/${endTime}`, dbserverBase);
 }
 
+function getDbserverCameraInfoUrl(dbserverBase: string, cameraId: string, startTime: number) {
+    return new URL(`${cameraId}/camerainfo/get-active-metadata/by-time-target/${startTime}`, dbserverBase);
+}
+
+function getDbserverConfigInfoUrl(dbserverBase: string, cameraId: string, startTime: number) {
+    return new URL(`${cameraId}/configinfo/get-active-metadata/by-time-target/${startTime}`, dbserverBase);
+}
+
 /**
  * Image filenames in tar archives from dbserver are in the form <timestamp>.jpg
  */
@@ -52,4 +60,31 @@ export async function* downloadSnapshots(
         await fut;
         yield* extractedEntries;
     }
+}
+
+/**
+ * Fetch and return the active camera info and config info for the given message recorder, in string format (without parsing), by camera ID.
+ */
+export async function getCameraInfoAndConfigInfo(
+    dbserverBase: string,
+    messageRecorder: MessageRecorder,
+): Promise<Map<string, {cameraInfo: string; configInfo: string}>> {
+    const cameraMetadataByCameraId = new Map();
+    const visitedCameras = new Set();
+    for (const [topic, cameraName] of Object.entries(messageRecorder.cameraNameByTopic)) {
+        if (visitedCameras.has(cameraName)) {
+            continue;
+        }
+        visitedCameras.add(cameraName);
+
+        const messages = messageRecorder.messagesByTopic[topic]!;
+        const startTimeMs = messages[0].frameTime.epochMs;
+        const [cameraInfo, configInfo] = await Promise.all([
+            fetch(getDbserverCameraInfoUrl(dbserverBase, cameraName, startTimeMs)).then((resp) => resp.text()),
+            fetch(getDbserverConfigInfoUrl(dbserverBase, cameraName, startTimeMs)).then((resp) => resp.text()),
+        ]);
+        cameraMetadataByCameraId.set(cameraName, {cameraInfo, configInfo});
+    }
+
+    return cameraMetadataByCameraId;
 }

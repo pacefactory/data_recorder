@@ -15,6 +15,11 @@ message Snapshot {
     bytes image = 2;
 }
 
+message CameraMetadata {
+    string camera_info = 1;
+    string config_info = 2;
+}
+
 message DataStore {
     message FrameDataList {
         repeated FrameData frameData = 2;
@@ -27,7 +32,9 @@ message DataStore {
     }
 
     map<string, SnapshotList> snapshots_by_camera = 3;
-    
+
     string name = 5;
     string description = 6;
+
+    map<string, CameraMetadata> camera_metadata = 7;
 }
