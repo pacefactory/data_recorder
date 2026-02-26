@@ -27,4 +27,7 @@ message DataStore {
     }
 
     map<string, SnapshotList> snapshots_by_camera = 3;
+    
+    string name = 5;
+    string description = 6;
 }

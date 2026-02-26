@@ -10,7 +10,12 @@ export class MessageStore {
         this.dataStore = dataStore;
     }
 
-    static async fromRecorder(recorder: MessageRecorder, dbserver_base?: string): Promise<MessageStore> {
+    static async fromRecorder(
+        recorder: MessageRecorder,
+        dbserver_base?: string,
+        name?: string,
+        description?: string,
+    ): Promise<MessageStore> {
         const messagesByTopic: {[topic: string]: DataStore.IFrameDataList} = {};
         for (const [topic, msgArray] of Object.entries(recorder.messagesByTopic)) {
             messagesByTopic[topic] = {frameData: msgArray};
@@ -29,7 +34,7 @@ export class MessageStore {
             }
         }
 
-        const dataStore: IDataStore = {messagesByTopic, snapshotsByCamera};
+        const dataStore: IDataStore = {messagesByTopic, snapshotsByCamera, name, description};
 
         const verifyResult = DataStore.verify(dataStore);
         if (verifyResult !== null) {
