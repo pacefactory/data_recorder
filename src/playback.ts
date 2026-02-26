@@ -1,6 +1,6 @@
 import mqtt from "mqtt";
 import {MessageStore} from "./storage";
-import {StoredMessage, StoredMessageOnTopic} from "./types";
+import {frameDataToStoredMessage, StoredMessageOnTopic} from "./types";
 import {setTimeout} from "node:timers/promises";
 
 export class MessageSequence {
@@ -14,7 +14,7 @@ export class MessageSequence {
         const messages = [];
         for (const [topic, {frameData}] of Object.entries(messageStore.dataStore.messagesByTopic)) {
             for (const msg of frameData!) {
-                messages.push({topic, storedMessage: msg as StoredMessage});
+                messages.push({topic, storedMessage: frameDataToStoredMessage(msg)});
             }
         }
 
