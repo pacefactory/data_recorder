@@ -26,7 +26,7 @@ export class MessageStore {
         if (dbserver_base !== undefined) {
             for await (const {timestamp, topic, imageData} of downloadSnapshots(dbserver_base, recorder)) {
                 const cameraName = recorder.cameraNameByTopic[topic];
-                const snapshotData = {epochMs: timestamp, image: imageData.read()};
+                const snapshotData = {epochMs: timestamp, image: imageData};
                 if (cameraName in snapshotsByCamera) {
                     snapshotsByCamera[cameraName].snapshot!.push(snapshotData);
                 } else {

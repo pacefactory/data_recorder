@@ -1,4 +1,3 @@
-import {Readable} from "node:stream";
 import tar from "tar-stream";
 import {stream} from "undici";
 import {MessageRecorder} from "./recording";
@@ -32,7 +31,7 @@ export async function* downloadSnapshots(
 ): AsyncGenerator<{
     timestamp: number;
     topic: string;
-    imageData: Readable;
+    imageData: Buffer;
 }> {
     for (const [topic, cameraName] of Object.entries(messageRecorder.cameraNameByTopic)) {
         const messages = messageRecorder.messagesByTopic[topic]!;
@@ -50,15 +49,18 @@ export async function* downloadSnapshots(
             ({opaque: extract}) => extract,
         );
 
-        const extractedEntries = [];
         for await (const tarEntry of extract) {
             const filename = tarEntry.header.name;
-            extractedEntries.push({timestamp: unixTimestampFromFilename(filename), topic, imageData: tarEntry});
+            const chunks: Buffer[] = [];
+            for await (const chunk of tarEntry) {
+                chunks.push(chunk);
+            }
+            const buf = Buffer.concat(chunks);
+            yield {timestamp: unixTimestampFromFilename(filename), topic, imageData: buf};
             tarEntry.resume();
         }
 
         await fut;
-        yield* extractedEntries;
     }
 }
 
