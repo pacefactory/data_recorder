@@ -26,7 +26,7 @@
     "registry": "https://npm.pkg.github.com/"
   },
   "scripts": {
-    "pbuf-build": "pbjs -t static-module -w commonjs -o proto/DataStore.js proto/DataStore.proto && pbts -o proto/DataStore.d.ts proto/DataStore.js && mkdir -p dist/proto && cp proto/*.js dist/proto/",
+    "pbuf-build": "pbjs -t static-module -w commonjs -o proto/DataStore.js proto/DataStore.proto && pbts -o proto/DataStore.d.ts proto/DataStore.js && mkdir -p dist/proto && cp proto/*.js dist/proto/ && cp proto/*.d.ts dist/proto/",
     "build": "npm run pbuf-build && tsc",
     "start": "node dist/src/index.js",
     "test": "jest",
